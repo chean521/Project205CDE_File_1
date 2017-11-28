@@ -1,0 +1,175 @@
+<?php
+
+require ('Engines/PDFGenerator.php');
+require_once ('Engines/MySQL_Engine/MySQL_Engine.php');
+require_once('Engines/Config/config.php');
+
+$result_id = $_GET['pid'];
+
+function GetActDetails($ids)
+{
+    $conn = new mysqli(ConfigurationData::$database_host, ConfigurationData::$database_id, ConfigurationData::$database_pw, ConfigurationData::$database_db);
+    $query = "select activity_title,creation_date,description,start_date,end_date from voteactivity where activity_id=".$ids.";";
+    $result = array();
+    $res = $conn->query($query);
+    
+    if($res->num_rows > 0)
+    {
+        while($row = $res->fetch_assoc())
+        {
+            foreach($row as $col)
+            {
+                $result[] = $col;
+            }
+        }
+    }
+    
+    $conn->close();
+    return $result;
+}
+
+function GetCandDetails($ids)
+{
+    $conn = new mysqli(ConfigurationData::$database_host, ConfigurationData::$database_id, ConfigurationData::$database_pw, ConfigurationData::$database_db);
+    $query = "call GetCandDetails_Result('".$ids."');";
+    $result = array();
+    $res = $conn->query($query);
+    
+    if($res->num_rows > 0)
+    {
+        while($row = $res->fetch_assoc())
+        {
+            $result[] = array($row['std_id'], $row['std_name'], $row['prog']);
+        }
+    }
+    
+    $conn->close();
+    return $result;
+}
+
+function GetNoVote($ids)
+{
+    $conn = new mysqli(ConfigurationData::$database_host, ConfigurationData::$database_id, ConfigurationData::$database_pw, ConfigurationData::$database_db);
+    $query = "call GetNoResult_All('".$ids."');";
+    $result = array();
+    $res = $conn->query($query);
+    
+    if($res->num_rows > 0)
+    {
+        while($row = $res->fetch_assoc())
+        {
+            $result[] = array($row['candidate_id'], $row['no_vote']);
+        }
+    }
+    
+    $conn->close();
+    return $result;
+}
+
+$result_1 = GetActDetails($result_id);
+$result_2 = GetCandDetails($result_id);
+$result_3 = GetNoVote($result_id);
+
+$category = array('Activity Details', 'Candidate Details');
+$act_item = array('Activity Title', 'Creation Date', 'Activity Description', 'Date Start of Vote', 'Date End of Vote');
+
+$export = new PDFGenerator('P','pt','A4');
+$export->AliasNbPages();
+$export->AddPage();
+$export->SetTitle('Export Voting Report');
+$export->SetFont('Arial','BU',13);
+$export->Cell(40,10,'Activity Result (Activity ID: '.$result_id.')');
+$export->Ln(20);
+$export->SetFont('Arial','B',11);
+$export->Cell(40,10,$category[0]);
+$export->Ln(12);
+$export->SetFont('Arial','',11);
+
+$table_html = '<table border="1">';
+$counter = 0;
+
+foreach($result_1 as $e)
+{
+    $table_html .= '<tr>';
+    $table_html .= '<td width="700" height="100"><b>'.$act_item[$counter].'</b></td>';
+    $table_html .= '<td width="1300" height="100">'.$e.'</td>';
+    $table_html .= '</tr>';
+    $counter++;
+}
+
+$table_html .= '</table>';
+
+$export->WriteHTML($table_html);
+$export->Ln(25);
+$export->SetFont('Arial','B',11);
+$export->Cell(40,10,$category[1]);
+$export->Ln(12);
+$export->SetFont('Arial','',11);
+
+$table_html2 = '<table border="1">';
+$counter2 = 0;
+$table_html2 .= '<tr>';
+$table_html2 .= '<td width="600" height="100"><b>Candidate ID</b></td>';
+$table_html2 .= '<td width="800" height="100"><b>Candidate Name</b></td>';
+$table_html2 .= '<td width="600" height="100"><b>Programme</b></td>';
+$table_html2 .= '</tr>';
+
+foreach($result_2 as $e)
+{
+    $table_html2 .= '<tr>';
+    $table_html2 .= '<td width="600" height="100">'.ucfirst($e[0]).'</td>';
+    $table_html2 .= '<td width="800" height="100">'.$e[1].'</td>';
+    $table_html2 .= '<td width="600" height="100">'.$e[2].'</td>';
+    $table_html2 .= '</tr>';
+    $counter++;
+}
+
+$table_html2 .= '</table>';
+
+$export->WriteHTML($table_html2);
+$export->Ln(25);
+$export->SetFont('Arial','B',11);
+$export->Cell(40,10,'Result Description');
+$export->Ln(12);
+$export->SetFont('Arial','',11);
+
+$table_html3 = '<table border="1">';
+
+$total = 0;
+foreach($result_3 as $r)
+{
+    $total += (int)$r[1];
+}
+
+$table_html3 .= '<tr>';
+$table_html3 .= '<td width="2000" height="100"><b>Total Voters Voted: '.$total.' vote(s)</b></td>';
+$table_html3 .= '</tr>';
+
+
+$table_html3 .= '<tr>';
+$table_html3 .= '<td width="600" height="100"><b>Candidate ID</b></td>';
+$table_html3 .= '<td width="1400" height="100"><b>Result</b></td>';
+$table_html3 .= '</tr>';
+
+$counter3 = 0;
+foreach($result_3 as $e)
+{
+    $table_html3 .= '<tr>';
+    $table_html3 .= '<td width="600" height="100">'.ucfirst($e[0]).'</td>';
+    $table_html3 .= '<td width="1400" height="100">'.$e[1].' vote(s), Overall Percentage: '. number_format((float)((int)$e[1]/$total)*100,2,'.','') .'%</td>';
+    $table_html3 .= '</tr>';
+    $counter++;
+}
+
+$table_html3 .= '</table>';
+
+$export->WriteHTML($table_html3);
+
+$export->Ln(100);
+
+$export->SetFont('Arial','B',10);
+$export->Cell(500,9,'**Report generated by digital, no signature required.**',0,1,'C');
+$export->Ln();
+
+$export->Output();
+

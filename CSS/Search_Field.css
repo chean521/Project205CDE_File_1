@@ -1,0 +1,14 @@
+/*Search Field*/
+
+.inner-addon{
+    position: relative;
+}
+
+.inner-addon .glyphicon{
+    position: absolute;
+    padding: 10px;
+    pointer-events: none;
+}
+
+.left-addon .glyphicon {left: 0px;}
+.left-addon input {padding-left: 30px;}

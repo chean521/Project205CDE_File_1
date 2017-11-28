@@ -1,0 +1,75 @@
+/* 
+    Created on : Oct 31, 2017, 10:45:00 PM
+    Author     : Oscar Loh Kah Chean
+*/
+
+html {position: relative; min-height: 100%;}
+body {font-family: Times New Roman, serif;}
+@import url(http://fonts.googleapis.com/css?family=Roboto);
+
+.navbar
+{
+    border: 0;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+.navbar-brand
+{
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand>img
+{
+    padding: 7px 14px;
+}
+
+.container-fluid
+{
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.carousel-inner > .item > img
+{
+    height: 750px;
+}
+
+* {
+    font-family: 'Roboto', sans-serif;
+}
+
+
+/* #########################################
+   #    override the bootstrap configs     #
+   ######################################### */
+
+.modal-backdrop.in {
+    filter: alpha(opacity=50);
+    opacity: .8;
+}
+
+.modal-content {
+    background-color: #ececec;
+    border: 1px solid #bdc3c7;
+    border-radius: 0px;
+    outline: 0;
+}
+
+.modal-header {
+    min-height: 16.43px;
+    padding: 15px 15px 15px 15px;
+    border-bottom: 0px;
+}
+
+.modal-body {
+    position: relative;
+    padding: 5px 15px 5px 15px;
+}
+
+.modal-footer {
+    padding: 15px 15px 15px 15px;
+    text-align: left;
+    border-top: 0px;
+}

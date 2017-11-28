@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Setting>
+    <config>
+        <allowCand lang="en">true</allowCand>
+    </config>
+    
+    <version>
+        <interface>1</interface>
+        <revision>9</revision>
+        <build>210</build>
+        <attr>Pre-released</attr>
+    </version>
+    
+</Setting>
